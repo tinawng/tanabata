@@ -7,7 +7,7 @@ app.listen(3000, () => {
   console.log("serv on 3k")
 })
 
-app.get("/url", (req, res) => {
+app.get("/cmd/temp", (req, res) => {
   var regex = /temp=([^'C]+)/;
   var cmd = spawn("/opt/vc/bin/vcgencmd", ["measure_temp"]);
   cmd.stdout.on("data", function (buf) {
@@ -25,7 +25,7 @@ app.get("/cmd/:cmd", (req, res) => {
   });
 });
 
-app.get("/cmd", (req, res) => {
+app.post("/cmd", (req, res) => {
   let params = req.query.cmd.split(' ')
   let cmd = spawn(params[0], params.slice(1))
 
