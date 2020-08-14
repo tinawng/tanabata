@@ -1,7 +1,8 @@
 import mongoose from 'mongoose';
 
 export default function (app) {
-    mongoose.connect('mongodb://127.0.0.1/garden', { useNewUrlParser: true, useUnifiedTopology: true });
+    if (!process.env.MONGO_HOST) return;
+    mongoose.connect('mongodb://' + process.env.MONGO_HOST + '/garden', { useNewUrlParser: true, useUnifiedTopology: true });
 
     const db = mongoose.connection;
     db.on('error', console.error.bind(console, 'connection error:'));

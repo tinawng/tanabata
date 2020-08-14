@@ -1,4 +1,7 @@
+import dotenv from 'dotenv';
 import fastify from 'fastify';
+
+dotenv.config();
 
 const app = fastify()
 app.listen(3000, (err) => {
@@ -15,5 +18,5 @@ app.get('/', function (req, res) {
 import root_cmd from './roots/cmd/index.js'
 root_cmd(app);
 import root_mongo from './roots/mongo/index.js'
-// root_mongo(app);
+root_mongo(app);
 
