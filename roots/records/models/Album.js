@@ -15,6 +15,7 @@ let album_schema = new Schema({
   description: { type: String, default: "" },
   author: { type: String, default: "Various artists" },
   date: { type: Date, default: Date.now },
+  icon: { type: String, default: "music-circle-outline"},
   is_hidden: { type: Boolean, default: false },
 },
   {
