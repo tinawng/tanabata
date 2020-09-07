@@ -125,7 +125,8 @@ export default async function (app, opts) {
         });
       });
 
-    } else
+    }
+    else
       res.code(401).send({ message: "No logged user 🔒" });
   });
   app.delete("/track/:track_id", async (req, res) => {
@@ -149,21 +150,38 @@ export default async function (app, opts) {
   });
 
   // REVIEW
-  app.post("/review", (req, res) => {
+  app.post("/review", async (req, res) => {
     if (req.is_auth) {
       req.body.user_id = req.user_id;
 
-      const review = new review_model(req.body);
-      review.save().then((response) => {
-        res.code(201).send({
-          message: "Review successfully created!",
-          result: response
+      const found = await review_model.findOneAndReplace({ track_id: req.body.track_id, user_id: req.user_id }, req.body);
+      if (found == null) {
+        const review = new review_model(req.body);
+        review.save().then((response) => {
+          res.code(201).send({
+            message: "Review successfully created!",
+            result: response
+          });
+        }).catch(error => {
+          res.code(500).send({
+            error: error
+          });
         });
-      }).catch(error => {
-        res.code(500).send({
-          error: error
-        });
-      });
+      }
+    }
+    else
+      res.code(401).send({ message: "No logged user 🔒" });
+  });
+  app.get("/reviews/album/:album_id", async (req, res) => {
+    if (req.is_auth) {
+      res.code(200).send(await review_model.find({ album_id: req.params.album_id }).exec());
+    }
+    else
+      res.code(401).send({ message: "No logged user 🔒" });
+  });
+  app.get("/reviews/user/:user_id", async (req, res) => {
+    if (req.is_auth) {
+      res.code(200).send(await review_model.find({ user_id: req.params.user_id }).exec());
     }
     else
       res.code(401).send({ message: "No logged user 🔒" });
@@ -256,9 +274,9 @@ export default async function (app, opts) {
   app.post("/user/permissions/:user_id", async (req, res) => {
     if (await hasPermission(req.user_id, "manage-users")) {
       const update = req.body;
-      await user_model.findOneAndUpdate({'_id': req.params.user_id}, update)
+      await user_model.findOneAndUpdate({ '_id': req.params.user_id }, update)
 
-      const updated_user = await user_model.findOne({'_id': req.params.user_id})
+      const updated_user = await user_model.findOne({ '_id': req.params.user_id })
       res.code(200).send(updated_user);
     }
     else
