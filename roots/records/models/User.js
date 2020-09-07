@@ -2,7 +2,7 @@
 
 import mongoose from 'mongoose';
 import unique_validator from 'mongoose-unique-validator';
-import { db_records } from '../../../mongo.js';
+import { db_records } from '../../../mongoose.config.js';
 
 const Schema = mongoose.Schema;
 

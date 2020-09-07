@@ -1,7 +1,7 @@
 // https://mongoosejs.com/docs/guide.html
 
 import mongoose from 'mongoose';
-import { db_records } from '../../../mongo.js';
+import { db_records } from '../../../mongoose.config.js';
 
 const Schema = mongoose.Schema;
 
