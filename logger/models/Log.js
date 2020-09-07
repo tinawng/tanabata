@@ -6,6 +6,7 @@ import { db_logs } from '../../mongoose.config.js';
 const Schema = mongoose.Schema;
 
 let log_schema = new Schema({
+  date: { type: Date, default: Date.now },
   method: String,
   url: String,
   params: Schema.Types.Mixed,
