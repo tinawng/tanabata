@@ -9,7 +9,7 @@ export default function (reponse, payload) {
     user_id: reponse.request.user_id || undefined,
     status: reponse.raw.statusCode,
     request_body_size: JSON.stringify(reponse.request.body).length,
-    response_body_size: payload.length,
+    response_body_size: payload.length || undefined,
     error: null
   }
 
