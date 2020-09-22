@@ -13,7 +13,7 @@ let album_schema = new Schema({
   date: { type: Date, default: Date.now },
   icon: { type: String, default: "music-circle-outline" },
   is_hidden: { type: Boolean, default: false },
-  reviewing_mode: { type: String, default: 'star-and-comment' }
+  reviewing_mode: { type: String, default: 'stars-and-comment' }
 },
   {
     collection: 'albums'
