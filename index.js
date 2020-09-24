@@ -3,6 +3,7 @@ import fastify from 'fastify';
 import cors from 'fastify-cors'
 import jwt from 'jsonwebtoken';
 import log from './logger/index.js';
+import multipart from 'fastify-multipart'
 
 dotenv.config();
 
@@ -15,14 +16,16 @@ app.listen(process.env.SERVER_PORT, process.env.SERVER_HOST, (err) => {
   console.log("🥔 Potato API \n🚀 Deployed on " + process.env.SERVER_HOST + ":" + process.env.SERVER_PORT);
 });
 
-app.register(cors, { origin: '*' });
+app.register(cors, { origin: '*', methods: ['GET', 'PUT', 'POST'], allowedHeaders: ['Content-Type', 'Authorization'] });
+app.register(multipart);
 
-if (process.env.LOG_REQUESTS) {
-  app.addHook('onSend', (req, reply, payload, done) => {
-    log(reply, payload);
-    done();
-  })
-}
+// Causing CORS error! WTF??!
+// if (process.env.LOG_REQUESTS) {
+//   app.addHook('onSend', (req, reply, payload, done) => {
+//     log(reply, payload);
+//     done();
+//   })
+// }
 
 app.decorateRequest('is_auth', '');
 app.decorateRequest('user_id', '');

@@ -20,6 +20,7 @@
     "dotenv": "^8.2.0",
     "fastify": "^3.3.0",
     "fastify-cors": "^4.1.0",
+    "fastify-multipart": "^3.2.0",
     "firebase-admin": "^9.2.0",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.10.3",
