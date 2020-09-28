@@ -9,7 +9,7 @@ const Schema = mongoose.Schema;
 let user_schema = new Schema({
   name: { type: String, unique: true, required: true },
   password: { type: String, required: true },
-  permissions: { type: Array, default: [] },
+  group_id: { type: Schema.Types.ObjectId, required: true, default: mongoose.Types.ObjectId("5f7253f6fbc2b3da76ab5648") },
 },
   {
     collection: 'users'
