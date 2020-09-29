@@ -14,3 +14,12 @@ Group related permissions:
 ##  User
 User related permissions:
 	- `user.manage` : create, modify, delete any user.
+
+##  Attribution Tab
+|Group Name  |Album              |Track  |Review  |Group  |User  |
+|------------|-------------------|-------|--------|-------|------|
+|`op`		 |manage, see-hidden |manage |manage  |manage |manage|
+|`dev` 		 |manage, see-hidden |manage |manage  |		  |manage|
+|`design` 	 |manage, see-hidden |manage |     	  |		  |		 |
+|`beta`		 |see-hidden		 |		 |		  |		  |		 |
+|`public`	 |					 |		 |		  |		  |		 |
