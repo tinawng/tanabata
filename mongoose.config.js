@@ -8,6 +8,7 @@ mongoose.set('useNewUrlParser', true);      // deprecation warning
 mongoose.set('useUnifiedTopology', true);   // deprecation warning
 mongoose.set('useCreateIndex', true);       // deprecation warning
 mongoose.set('useFindAndModify', false);    // deprecation warning
+mongoose.set('returnOriginal', false);
 
 const db_garden = mongoose.createConnection('mongodb://' + process.env.MONGODB_HOST + '/garden');
 const db_records = mongoose.createConnection('mongodb://' + process.env.MONGODB_HOST + '/records');

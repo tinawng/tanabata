@@ -8,7 +8,6 @@ const Schema = mongoose.Schema;
 
 let group_schema = new Schema({
     name: { type: String, unique: true, required: true },
-    division: { type: String },
     permissions: { type: Array, default: [] }
 },
     {
