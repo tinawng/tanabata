@@ -4,6 +4,7 @@ import cors from 'fastify-cors'
 import jwt from 'jsonwebtoken';
 import log from './logger/index.js';
 import multipart from 'fastify-multipart'
+import ky from 'ky-universal';
 
 dotenv.config();
 
@@ -16,8 +17,16 @@ app.listen(process.env.SERVER_PORT, process.env.SERVER_HOST, (err) => {
   console.log("🥔 Potato API \n🚀 Deployed on " + process.env.SERVER_HOST + ":" + process.env.SERVER_PORT);
 });
 
-app.register(cors, { origin: '*', methods: ['GET', 'PUT', 'POST'], allowedHeaders: ['Content-Type', 'Authorization'] });
+app.register(cors, { origin: '*'});
 app.register(multipart);
+
+const ky_local = ky.create({
+  prefixUrl: "http://127.0.0.1:" + process.env.SERVER_PORT + "/records/",
+  headers: {
+    secret: process.env.SECRET
+  }
+});
+
 
 // Causing CORS error! WTF??!
 // if (process.env.LOG_REQUESTS) {
@@ -31,6 +40,13 @@ app.decorateRequest('is_auth', '');
 app.decorateRequest('user_id', '');
 app.addHook('preHandler', (req, reply, done) => {
   req.is_auth = false;
+
+  // 💫 If request comes from server itself, bypass token checking
+  if (req.headers.secret === process.env.SECRET) {
+    req.is_auth = true;
+    req.user_id = process.env.SECRET;
+    done();
+  }
 
   if (req.headers.authorization)
     try {
@@ -68,5 +84,5 @@ app.post('/is_token_valid', (req, reply) => {
 import root_firebase_storage from './roots/firebase/storage/index.js';
 app.register(root_firebase_storage, { prefix: "/firebase/storage" });
 import root_records from './roots/records/index.js';
-app.register(root_records, { prefix: "/records" });
+app.register(root_records, { prefix: "/records", ky: ky_local });
 
