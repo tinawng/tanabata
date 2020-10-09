@@ -21,7 +21,7 @@ app.register(cors, { origin: '*'});
 app.register(multipart);
 
 const ky_local = ky.create({
-  prefixUrl: "http://127.0.0.1:" + process.env.SERVER_PORT + "/records/",
+  prefixUrl: "http://127.0.0.1:" + process.env.SERVER_PORT + "/",
   headers: {
     secret: process.env.SECRET
   }
