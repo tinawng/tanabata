@@ -84,5 +84,5 @@ app.post('/is_token_valid', (req, reply) => {
 import root_firebase_storage from './roots/firebase/storage/index.js';
 app.register(root_firebase_storage, { prefix: "/firebase/storage" });
 import root_records from './roots/records/index.js';
-app.register(root_records, { prefix: "/records", ky: ky_local });
+app.register(root_records, { prefix: "/records", ky: ky, ky_local: ky_local });
 
