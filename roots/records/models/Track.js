@@ -7,7 +7,7 @@ const Schema = mongoose.Schema;
 
 let track_schema = new Schema({
   title: { type: String, required: true },
-  path: { type: String, required: true },
+  file_url: { type: String, required: true },
   album_id: { type: Schema.Types.ObjectId, required: true },
   is_reference: { type: Boolean, default: false }
 },
