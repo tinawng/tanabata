@@ -34,7 +34,7 @@ export default async function (app, opts) {
       if (req.body.random_tracks)
         await opts.ky_local.post("records/faker/track", {
           json: {
-            quantity: casual.integer(1, 5),
+            quantity: casual.integer(3, 6),
             album_id: album._id,
             random_reviews: req.body.random_reviews
           }
@@ -88,11 +88,14 @@ export default async function (app, opts) {
         content.comment = casual.sentence;
         content.rating = casual.integer(1, 5);
       }
+      const date_offset = req.body.random_date ? casual.integer(-3, 4) : 0;
+      var date = Date.now() + 86400000*date_offset;
       const review = await (await opts.ky_local.post("records/review", {
         json: {
           as_user,
           track_id: req.body.track_id,
-          content
+          content,
+          date
         }
       })).json();
 
