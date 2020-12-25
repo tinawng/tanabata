@@ -77,6 +77,8 @@ app.post('/is_token_valid', (req, reply) => {
   }
 })
 
+import root_backup from './roots/backup/index.js';
+app.register(root_backup, { prefix: "/backup" });
 // import root_cmd from './roots/cmd/index.js';
 // app.register(root_cmd, { prefix: "/cmd" });
 // import root_mongo from './roots/mongo/index.js';
