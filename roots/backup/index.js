@@ -4,15 +4,19 @@ import youtubedl from "youtube-dl";
 export default async function (app, opts) {
 
   app.post("/video", (req, res) => {
-    const { name, url } = req.body;
+    if (req.headers.secret === process.env.SECRET) {
+      const { name, url } = req.body;
 
-    youtubedl.exec(url, ['-o', '/mnt/raid/videos/p0/needbackup/' + name + '.%(ext)s'], {}, (err, output) => {
-      if (err) throw err;
-      
-      // console.log(output.join('\n'))
-    })
+      youtubedl.exec(url, ['-o', process.env.BACKUP_PATH + name + '.%(ext)s'], {}, (err, output) => {
+        if (err) throw err;
 
-    res.send("Video should be downloading 🚚");
+        // console.log(output.join('\n'))
+      })
+
+      res.send("Video should be downloading 🚚");
+    }
+    else
+        res.code(401).send();
   });
 
 };
