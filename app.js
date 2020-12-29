@@ -48,7 +48,7 @@ app.addHook('preHandler', (req, reply, done) => {
     // 👥 Log as someone else ?
     req.user_id = req.body ? req.body.as_user ? req.body.as_user : process.env.SECRET : process.env.SECRET;
   }
-  else if (req.headers.authorization)
+  else if (req.headers.authorization){
     try {
       const token = req.headers.authorization.split(" ")[1];
       var decoded = jwt.verify(token, process.env.SECRET);
@@ -57,6 +57,17 @@ app.addHook('preHandler', (req, reply, done) => {
     } catch (error) {
       reply.code(401).send({ message: "Invalid Token 💔" });
     }
+  }
+  else if (req.query.auth_token) {
+    try {
+      const token = req.query.auth_token;
+      var decoded = jwt.verify(token, process.env.SECRET);
+      req.is_auth = true;
+      req.user_id = decoded.user_id;
+    } catch (error) {
+      reply.code(401).send({ message: "Invalid Token 💔" });
+    }
+  }
 
   done();
 })
@@ -77,8 +88,12 @@ app.post('/is_token_valid', (req, reply) => {
   }
 })
 
+import root_auth from './roots/auth/index.js';
+app.register(root_auth, { prefix: "/auth" });
 import root_backup from './roots/backup/index.js';
 app.register(root_backup, { prefix: "/backup" });
+import root_dango from './roots/dango/index.js';
+app.register(root_dango, { prefix: "/dango" });
 // import root_cmd from './roots/cmd/index.js';
 // app.register(root_cmd, { prefix: "/cmd" });
 // import root_mongo from './roots/mongo/index.js';
