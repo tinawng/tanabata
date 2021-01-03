@@ -11,7 +11,7 @@ export default async function (app, opts) {
     if (req.body.email)
       user = await user_model.findOne({ email: req.body.email });
 
-    if (!user || !bcrypt.compareSync(req.body.password, user.password)) return res.code(404).send({ message: "Authentication failed 🔒" });
+    if (!user || !bcrypt.compareSync(req.body.password, user.password)) return res.code(401).send({ message: "Authentication failed 🔒" });
 
     const jwt_token = jwt.sign({ user_id: user._id }, process.env.SECRET);
 
