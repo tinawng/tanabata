@@ -29,7 +29,7 @@ app.register(cors, { origin: '*' });
 app.register(multipart);
 
 const ky_local = ky.create({
-  prefixUrl: "http://127.0.0.1:" + process.env.SERVER_PORT + "/",
+  prefixUrl: "https://tanabata.tina.cafe/",
   headers: {
     secret: process.env.SECRET
   }
