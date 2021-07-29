@@ -13,7 +13,7 @@ export default async function (app, opts) {
     else
       res.code(401).send({ message: "No logged user 🔒" });
   });
-  // ➕ Create new sample
+  // ➕ Create & upload new sample
   app.post("/", async (req, res) => {
     if (await hasPermission(req.user_id, "recording.create")) {
       try {
@@ -21,7 +21,7 @@ export default async function (app, opts) {
         const data = await req.file();
         // ✏️ Writing the file in .temp/ with unique name
         const file_name = uuid();
-        await pump(data.file, fs.createWriteStream("roots/contrast/.temp/" + file_name));
+        await saveFile(data.file, file_name);
 
         // 🚀 Uploading file to Firebase Storage 🗑️ Clean up .temp/ 🌱 Getting file metadatas
         const file_metadata = await (await opts.ky_local.post("firebase/storage/uploadlocal", {
@@ -35,7 +35,8 @@ export default async function (app, opts) {
         const { mediaLink } = await (await opts.ky.get(file_metadata.selfLink)).json();
 
         const sample = new sample_model({
-          recording_id: data.fields.recording_id.value,
+          recording_id: data.fields.recording_id?.value ?? false,
+          original_file_name: data.fields.original_file_name.value,
           is_reference: data.fields.is_reference.value,
           file_url: mediaLink
         });
@@ -49,6 +50,24 @@ export default async function (app, opts) {
     else
       res.code(401).send({ message: "Missing permission 🔒" });
   })
+  // ➕ Create new sample
+  app.post("/raw", async (req, res) => {
+
+    if (await hasPermission(req.user_id, "recording.create")) {
+      const sample = new sample_model(req.body);
+      await sample.save();
+      res.code(201).send(sample);
+    }
+    else
+      res.code(401).send({ message: "Missing permission 🔒" });
+  });
+  // ✏️ Edit sample
+  app.put("/:sample_id", async (req, res) => {
+    if (await hasPermission(req.user_id, "recording.modify") || await isOwner(req.user_id, req.params.review_id))
+      res.code(200).send(await sample_model.findOneAndUpdate({ _id: req.params.sample_id }, req.body));
+    else
+      res.code(401).send({ message: "Missing permission 🔒" });
+  });
   // 🗑️ Delete sample
   app.delete("/:sample_id", async (req, res) => {
     if (await hasPermission(req.user_id, "recording.delete") || await isOwner(req.user_id, req.params.sample_id)) {
@@ -79,9 +98,13 @@ export default async function (app, opts) {
   })
   // 📄 Get all samples of a given recording
   app.get("/recording/:recording_id", async (req, res) => {
-    if (req.is_auth)
-      res.code(200).send(await sample_model.find({ recording_id: req.params.recording_id }).exec());
-    else
-      res.code(401).send({ message: "No logged user 🔒" });
+    res.code(200).send(await sample_model.find({ recording_id: req.params.recording_id }, "-original_file_name").exec());
   });
+}
+
+function saveFile(file, file_name) {
+  // 💡 Basically converting a callback to async function
+  return new Promise((resolve, reject) => {
+    pump(file, fs.createWriteStream("roots/contrast/.temp/" + file_name), () => { resolve() });
+  })
 }

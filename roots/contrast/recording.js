@@ -16,10 +16,35 @@ export default async function (app, opts) {
           ...recordings[i]._doc,
           "author": await getAuthor(recordings[i].user_id),
           "samples_number": await getSamplesNumber(recordings[i]._id),
+          "is_reviewed": await hasBeenReviewed(recordings[i]._id, req.user_id)
         }
       }
 
-      res.code(200).send(recordings);
+      res.code(200).send(recordings.sort((a, b) => b.date - a.date));
+    }
+    else
+      res.code(401).send({ message: "No logged user 🔒" });
+  });
+  // 📄 Generate user summary
+  app.get("/summary", async (req, res) => {
+    if (req.is_auth) {
+      let summary = {};
+
+      summary.new_recording = 0;
+      var recordings = await recording_model.find({ user_id: { $ne: req.user_id } });
+      recordings.sort((a, b) => b.date - a.date)
+      for (const recording of recordings) {
+        if (await hasBeenReviewed(recording._id, req.user_id)) break;
+        ++summary.new_recording;
+      }
+
+      summary.missed_recording = 0;
+      for (const recording of recordings) {
+        summary.missed_recording += (await review_model.findOne({ recording_id: recording._id })) ? 0 : 1;
+      }
+
+      summary.review_submitted = await review_model.countDocuments({ user_id: req.user_id });
+      res.code(200).send(summary);
     }
     else
       res.code(401).send({ message: "No logged user 🔒" });
@@ -38,13 +63,18 @@ export default async function (app, opts) {
   app.get("/:recording_id", async (req, res) => {
     if (req.is_auth) {
       let recording = await recording_model.findById(req.params.recording_id);
-      recording = { ...recording._doc, "samples_number": await getSamplesNumber(recording._id) };
+      recording = {
+        ...recording._doc,
+        "reviews_number": await getReviewsNumber(recording._id),
+        "samples_number": await getSamplesNumber(recording._id),
+        "has_been_reviewed": await hasBeenReviewed(recording._id, req.user_id),
+      };
       res.code(200).send(recording);
     }
     else
-      res.code(401).send({ message: "No logged user 🔒" });
+      res.code(200).send(await recording_model.findById(req.params.recording_id, "title review_method"));
   });
-  // 🔧 Modify recording
+  // ✏️ Edit recording
   app.put("/:recording_id", async (req, res) => {
     if (await hasPermission(req.user_id, "recording.modify") || await isOwner(req.user_id, req.params.recording_id))
       res.code(200).send(await recording_model.findOneAndUpdate({ _id: req.params.recording_id }, req.body));
@@ -81,24 +111,28 @@ export default async function (app, opts) {
         }
       }
 
-      res.code(200).send(recordings);
+      res.code(200).send(recordings.sort((a, b) => b.date - a.date));
     }
     else
       res.code(401).send({ message: "No logged user 🔒" });
   });
-  // ✏️ Get all reviews for a given recording
+  // 📄 Get all reviews for a given recording
   app.get("/reviews/:recording_id", async (req, res) => {
     if (await hasPermission(req.user_id, "recording.*") || await isOwner(req.user_id, req.params.recording_id)) {
       const samples = await sample_model.find({ recording_id: req.params.recording_id });
       let reviews = [];
       for (let i = 0; i < samples.length; i++) {
-        reviews.push(await review_model.find({ sample_id: samples[i]._id }));
+        let obj = {
+          'sample_name': (await sample_model.findById(samples[i]._id, "-_id original_file_name")).original_file_name,
+          'reviews': await review_model.find({ sample_id: samples[i]._id })
+        }
+        reviews.push(obj);
       }
 
       res.code(200).send(reviews);
     }
     else
-      res.code(401).send({ message: "No logged user 🔒" });
+      res.code(401).send({ message: "Missing permission 🔒" });
   });
 
   app.get("/is_reviewed/:recording_id", async (req, res) => {
@@ -145,4 +179,7 @@ async function getSamplesNumber(recording_id) {
 }
 async function getAuthor(recording_user_id) {
   return (await user_model.findById(recording_user_id, "-_id firstname lastname department profile_picture"))._doc;
+}
+async function hasBeenReviewed(recording_id, user_id) {
+  return (await review_model.find({ recording_id: recording_id, user_id: user_id })).length != 0;
 }

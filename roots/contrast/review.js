@@ -1,20 +1,21 @@
 import review_model from './models/Review.js';
+import sample_model from './models/Sample.js';
 import { hasPermission, isOwner } from "./index.js";
 
 export default async function (app, opts) {
   // ➕ Create new review(s)
   app.post("/", async (req, res) => {
     if (req.is_auth) {
-      console.log(req.body);
       req.body = Array.isArray(req.body) ? req.body : [req.body];
       for (let i = 0; i < req.body.length; i++) {
         let sample = req.body[i];
-        
+        sample = { ...sample, "recording_id": (await sample_model.findById(sample.sample_id, "-_id recording_id")).recording_id };
+
         const found_review = await review_model.findOne({ sample_id: sample.sample_id, user_id: req.user_id })
 
         // ✏️ Update if user already published a review for this recording.
         if (found_review) {
-          const review = await (await opts.ky_local.put("contrast/review/" + found_review._id, { json: sample })).json()
+          const review = await opts.ky_local.$put("contrast/review/" + found_review._id, { json: sample });
           res.code(200).send(review);
         }
         else {
@@ -30,7 +31,7 @@ export default async function (app, opts) {
   // ✏️ Edit review
   app.put("/:review_id", async (req, res) => {
     if (await hasPermission(req.user_id, "review.modify") || await isOwner(req.user_id, req.params.review_id))
-      res.code(200).send(await review_model.findOneAndUpdate({ _id: req.params.review_id }, { content: req.body.content, date: Date.now() }));
+      res.code(200).send(await review_model.findOneAndUpdate({ _id: req.params.review_id }, { content: req.body.content, recording_id: Date.now() }));
     else
       res.code(401).send({ message: "Missing permission 🔒" });
   });
